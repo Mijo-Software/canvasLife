@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="de" id="*">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <style>
+        * {
+            text-align: center;
+        }
+        
+        table {
+            font-family: sans-serif;
+            font-size: small;
+            border-collapse: collapse;
+        }
+        
+        table.center {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        tr,
+        td {
+            text-align: left;
+        }
+    </style>
+    <title>canvasLife</title>
+</head>
+
+<body id="body" onload="showCanvasParam(); showControlsParam(); showStatisticParam();">
+    <p><canvas id="canvas" width="300" height="300" style="border: 2px solid black;">Ihr Browser ist veraltet. Bitte installieren Sie eine aktuelle Version des Browsers.</canvas></p>
+    <p id="controls">
+        <input id="probabilityRange" name="probabilityRange" type="range" min="0" max="100" value="50" step="1" placeholder="Wahrscheinlichkeit für eine Zelle, dass sie in das Feld gelangt (0-100%, Standard: 50%)" onmousemove="rangeProbMove();" title="Wahrscheinlichkeit für eine Zelle, dass sie in das Feld gelangt (0-100%, Standard: 50%)"
+        />
+        <span id="probabilityRangeTextContent" style="font-family:sans-serif; font-size:small;">50%</span>
+        <button id="restart" name="restart" onclick="restart();" title="Startet die Simulation neu" value="restart"><img style="vertical-align : middle;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAflBMVEUAAACAr0B4t0B6tUB7skF8s0B6skJ8s0B7tEJ8s0J8s0J7skJ7s0F8s0J7skF8s0F8skF8s0F7skF7s0J8skF7s0J8s0KCtkqIulKOvluUwmOgyHSmzHymzH2s0IWy1I2315a42JW+2p2+2p7E3qbK4q/Q5rfT57rW6sDX6sEXqToCAAAAFnRSTlMAECAwT1Bgb3B/gJ+gr7C/wNDf4O/wiNr7bgAAAIJJREFUGBltwdkCgUAAhtG/SWSQLPNNlrJE8v4vaERddY7Gmcl8MYs1sHRWkX4y/vZGX5bBWoGBw/sBeA+ppCkcXzVQVZBJslBVHiga2Epawu1E4FtwklIo7wRlDbmkGHheC39uCrAKMvCXpq0LcJGCyNFL1DEbOi5RL812LreRxnwA4W8NWSJfkiIAAAAASUVORK5CYII=" alt="restart-logo" />Restart</button>
+        <button id="stop" name="stop" onclick="stop();" title="Stoppt die Simulation" value="stop"><img style="vertical-align : middle;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAElBMVEUAAAD/PQD/PAD/PAD/OwD/PQCJVXgIAAAABXRSTlMAFUBVVpDycQwAAAAbSURBVAjXY2AgCggpKSmCGa6hocGkM+DaCQIAYlMIe7OifTkAAAAASUVORK5CYII=" alt="stop-logo" />Stop</button>
+        <button id="go" name="go" onclick="go();" title="Führt die Simulation weiter aus" value="go" disabled="disabled"><img style="vertical-align : middle;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAGFBMVEUAAAAgj/8gl/MglvQglfQglvIhlfIhlvOwGrMfAAAAB3RSTlMAEEBfYN/gc1Jf9gAAAChJREFUCNdjYCAKCMAYqgZQhnoplKVeDmWpl5c5QBhQmkHNAV07QQAAbuAFHNp8B8kAAAAASUVORK5CYII=" alt="go-logo" />Go</button>
+        <br />
+        <button id="showCanvas" name="showCanvas" onclick="showCanvas();" title="Zeigt die Zeichenfläche an" value="showCanvas"><img style="vertical-align : middle;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAZlBMVEUAAAD/gAD0egD1ewD1ewD0fAD0fACUKgmkLgmlOQemOQesPgatPQW4SAW6Nwq/NgzDOgvEUwTJRAnMRwnTTwfXVAbcZwLjbAHkZgPnagPucgH1fAD1hA33kyX3nDH7w2/7yXr/+cReT/1xAAAAB3RSTlMAEDCfoL/AM/GMEAAAAGJJREFUGBkFwTEOAjEQBDDvKFDS8v/nUQJSTuguG2wAAAAASioAeveQJwBeHQGoW0SAE6kg4HpP1loI+JiXtTYCs/n+jobgmujTsTEwB5U96rwz8ACAaABoJQmAXhsAAACAP2XWJaKlUMQPAAAAAElFTkSuQmCC" alt="showcanvas-logo" />Zeichenfläche an/aus</button>
+        <br />
+        <button id="showControls" name="showControls" onclick="showControls();" title="Versteckt den Bereich der Kontrolle" value="showControls"><img style="vertical-align : middle;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAclBMVEUAAABggI9AWGBgeopgfIthe4xFWmJgfYpEWWRgfYtgfItgfIpFWWNgfItgfIpgfYtgfItgfYpFWmRFWWNgfYtgfYpgfItgfYtgfIpJX2pIX2lLYWxFWmZKYm5LYWxFWmRQaXVSa3dVb3xWcHtZc4FgfYsrX046AAAAH3RSTlMAECAwQF9gYHBwgJCgoK+wv8DP0NDf4O/w9vf3+/v8F5rcIgAAAI1JREFUGBkFwYlCglAUBcBBXlngbtBmXhfO//9iMwAAAMPhMACAYzIB6F+0zyTNugfHTHnebo9MmWCd5FpV9ZdkwJDcq87nqnsywjo/tWFT33kHLVWvvFWlQbfLb51Wq1Nds+uwT5aqqqol2aIleV6qLs8kPey/xjnLknmbEXQdSWa6DsBHcgQAfWs98A8zVQ4tcmwSSwAAAABJRU5ErkJggg==" alt="showcontrols-logo" />Bedienelemente an/aus</button>
+        <button id="showStatistic" name="showStatistic" onclick="showStatistic();" title="Zeigt den Bereich der Statistik an" value="showStatistic"><img style="vertical-align : middle;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAOVBMVEUAAACfIK+fKK+aJa+bJK+cJq+bJ6+bJq+bJbGcJ6+cJq+cJrCbJq+cJq+cJ7CcJ6+cJrCbJq+cJ7A7mv+XAAAAEnRSTlMAECAwQFBwgI+QoK+w0N/g7/CkplbAAAAAXklEQVQYGY3BSwLCIBQDwIQXoagUyP0P2wV+WHYGt+QxMjbhUhzgK2GRAQu1E4scYcnCV7Mb+hN/EsokduFHHEfgp705eh/ER5lJJi0saWTIpIUlVYDzPCexiVoDd1yY1AL2JjKu5QAAAABJRU5ErkJggg==" alt="showstatistic-logo" />Statistik an/aus</button>
+    </p>
+    <table id="statistic" class="center">
+        <tr>
+            <td>Feldgröße:</td>
+            <td id="gridSizeTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Zellplätze:</td>
+            <td id="maxCellPlacesTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Wahrscheinlichkeit:</td>
+            <td id="probabilityCellsTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Lebende Zellen zu Startbeginn:</td>
+            <td id="livingCellsStartStateTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Generationen:</td>
+            <td id="generationsTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Lebende Zellen:</td>
+            <td id="livingCellsTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Zelldichte global:</td>
+            <td id="celluarityGlobalTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Zelldichte lebend:</td>
+            <td id="celluarityLivingTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Totale lebende Zellen:</td>
+            <td id="totalLivingCellsTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Totale sterbende Zellen:</td>
+            <td id="totalDyingCellsTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Verhältnis totaler lebender und sterbender Zellen:</td>
+            <td id="totalRatioOfLivingAndDyingCellsTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Laufzeit in Millisekunden:</td>
+            <td id="runtimeTextContent">---</td>
+        </tr>
+        <tr>
+            <td>Verarbeitete Generationen pro Sekunde:</td>
+            <td id="measuredTimeOfGenerationsTextContent">---</td>
+        </tr>
+    </table>
+
+    <script>
+        "use strict";
+
+        var gridWidth = findGetParameter("width"),
+            gridHeight = findGetParameter("height"),
+            drawColor = findGetParameter("color"),
+            bgColor = findGetParameter("backgroundcolor"),
+            probability = findGetParameter("probability");
+
+        if (gridWidth !== null) {
+            document.getElementById("canvas").setAttribute("width", gridWidth);
+        } else gridWidth = document.getElementById("canvas").width;
+        if (gridHeight !== null) {
+            document.getElementById("canvas").setAttribute("height", gridHeight);
+        } else gridHeight = document.getElementById("canvas").height;
+        if (drawColor !== null) {
+            document.getElementById("canvas").style.borderColor = drawColor;
+            document.getElementById("body").style.color = drawColor;
+        }
+        if (bgColor !== null) {
+            document.getElementById("body").style.backgroundColor = bgColor;
+        }
+        if (probability !== null) {
+            document.getElementById("probabilityRange").value = probability;
+            document.getElementById("probabilityRangeTextContent").textContent = probability + "%";
+            document.getElementById("probabilityCellsTextContent").textContent = probability + "%";
+        }
+
+        var theGrid = createArray(gridWidth),
+            mirrorGrid = createArray(gridWidth),
+            repeater,
+            maxCellPlaces = gridWidth * gridHeight,
+            generations = 0,
+            livingCells = 0,
+            livingCellsStartState = 0,
+            celluarityGlobal = 0,
+            celluarityLiving = 0,
+            totalLivingCells = 0,
+            totalDyingCells = 0,
+            startTime = 0,
+            measuredTimeOfGenerations = 0;
+
+        document.getElementById("gridSizeTextContent").textContent = gridWidth + "x" + gridHeight;
+        document.getElementById("maxCellPlacesTextContent").textContent = maxCellPlaces;
+
+        startTime = performance.now();
+        fillRandom(); //create the starting state for the grid by filling it with random cells
+        tick(); //call main loop
+
+        //functions
+
+        function RoundFloat(x, n) { //round a number to n decimal places
+            if (n < 1 || n > 14) return false;
+            var e = Math.pow(10, n);
+            var k = (Math.round(x * e) / e).toString();
+            if (k.indexOf(".") == -1) k += ".";
+            k += e.toString().substring(1);
+            return k.substring(0, k.indexOf(".") + n + 1);
+        }
+
+        function rangeProbMove() { // show the probability by moving the range marker
+            document.getElementById("probabilityRangeTextContent").textContent = document.getElementById("probabilityRange").value + "%";
+        }
+
+        function restart() { //stop the animation, refill the grid und start the animation again
+            stop();
+            generations = 0;
+            livingCells = 0;
+            livingCellsStartState = 0;
+            totalLivingCells = 0;
+            totalDyingCells = 0;
+            measuredTimeOfGenerations = 0;
+            startTime = performance.now();
+            fillRandom();
+            drawGrid();
+        }
+
+        function stop() { //stop the animation
+            document.getElementById("go").disabled = "";
+            document.getElementById("stop").disabled = "disabled";
+            cancelAnimationFrame(repeater);
+        }
+
+        function go() { //Start the stopped animation
+            stop(); //it stops the actual animation event, otherwise it stacks the animation events
+            document.getElementById("go").disabled = "disabled";
+            document.getElementById("stop").disabled = "";
+            tick();
+        }
+
+        function showCanvasParam() {
+            var showcanvas = findGetParameter("showcanvas")
+            var element = document.getElementById("canvas");
+            if (showcanvas == 0 || showcanvas == "false" || showcanvas == "no" || showcanvas == "disabled") element.style.display = "none";
+        }
+
+        function showControlsParam() {
+            var showcontrols = findGetParameter("showcontrols")
+            var element = document.getElementById("controls");
+            if (showcontrols == 0 || showcontrols == "false" || showcontrols == "no" || showcontrols == "disabled") element.style.visibility = "hidden";
+        }
+
+        function showStatisticParam() {
+            var showstatistic = findGetParameter("showstatistic");
+            var element = document.getElementById("statistic");
+            if (showstatistic === 0 || showstatistic === "false" || showstatistic === "no" || showstatistic === "disabled") element.style.visibility = "hidden";
+        }
+
+        function showCanvas() {
+            var element = document.getElementById("canvas");
+            if (element.style.display === "none") {
+                element.style.display = "initial";
+            } else {
+                element.style.display = "none";
+            }
+        }
+
+        function showControls() {
+            var element = document.getElementById("controls");
+            if (element.style.display === "none") {
+                element.style.display = "initial";
+            } else {
+                element.style.display = "none";
+            }
+        }
+
+        function showStatistic() {
+            var element = document.getElementById("statistic");
+            if (element.style.display === "none") {
+                element.style.display = "initial";
+            } else {
+                element.style.display = "none";
+            }
+        }
+
+        function findGetParameter(parameterName) { // Find the parameter in the url and return the value; if is no parameter setted return a null-object
+            var result = null,
+                tmp = [];
+            var items = location.search.substr(1).split("&");
+            for (var index = 0; index < items.length; index++) {
+                tmp = items[index].split("=");
+                if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+            }
+            return result;
+        }
+
+        function tick() { //main loop
+            drawGrid();
+            updateGrid();
+            repeater = requestAnimationFrame(tick);
+        }
+
+        function createArray(rows) { //creates a 2 dimensional array of required height
+            var arr = [];
+            for (var i = 0; i < rows; i++) {
+                arr[i] = [];
+            }
+            return arr;
+        }
+
+        function fillRandom() { //fill the grid randomly
+            var max = document.getElementById("probabilityRange").getAttribute("max");
+            var value = document.getElementById("probabilityRange").value;
+            var arr = new Array(max);
+            for (var i = 0; i < max; i++) {
+                if (i < value) arr[i] = 1;
+            }
+            livingCellsStartState = 0;
+            for (var j = 0; j < gridHeight; j++) { //iterate through rows
+                for (var k = 0; k < gridWidth; k++) { //iterate through columns
+                    var rawRandom = Math.random(); //get a raw random number
+                    var improvedNum = (rawRandom * max); //*2 convert it to an int
+                    var randomBinary = Math.floor(improvedNum);
+                    if (arr[randomBinary] === 1) {
+                        theGrid[j][k] = 1;
+                        livingCellsStartState++;
+                        totalLivingCells++;
+                    } else {
+                        theGrid[j][k] = 0;
+                    }
+                }
+            }
+            document.getElementById("livingCellsStartStateTextContent").textContent = livingCellsStartState;
+            document.getElementById("probabilityCellsTextContent").textContent = value + "%";
+        }
+
+        function drawGrid() { //draw the contents of the grid onto a canvas
+            livingCells = 0;
+            var c = document.getElementById("canvas");
+            if (c.getContext) {
+                var ctx = c.getContext("2d");
+                ctx.clearRect(0, 0, c.width, c.height); //this should clear the canvas ahead of each redraw
+                for (var j = 0; j < gridHeight; j++) { //iterate through rows
+                    for (var k = 0; k < gridWidth; k++) { //iterate through columns
+                        if (theGrid[j][k] === 1) {
+                            livingCells++;
+                            ctx.fillStyle = drawColor;
+                            ctx.fillRect(j, k, 1, 1);
+                        }
+                    }
+                }
+                celluarityGlobal = (livingCells / maxCellPlaces) * 100;
+                celluarityLiving = (livingCells / livingCellsStartState) * 100;
+                measuredTimeOfGenerations = generations / (performance.now() - startTime) * 1000;
+                document.getElementById("generationsTextContent").textContent = generations;
+                document.getElementById("livingCellsTextContent").textContent = livingCells;
+                document.getElementById("celluarityGlobalTextContent").textContent = RoundFloat(celluarityGlobal, 3) + "%";
+                document.getElementById("celluarityLivingTextContent").textContent = RoundFloat(celluarityLiving, 3) + "%";
+                document.getElementById("totalLivingCellsTextContent").textContent = totalLivingCells;
+                document.getElementById("totalDyingCellsTextContent").textContent = totalDyingCells;
+                document.getElementById("totalRatioOfLivingAndDyingCellsTextContent").textContent = RoundFloat(totalLivingCells / totalDyingCells, 3);
+                document.getElementById("runtimeTextContent").textContent = Math.round(performance.now() - startTime);
+                document.getElementById("measuredTimeOfGenerationsTextContent").textContent = RoundFloat(measuredTimeOfGenerations, 3);
+            }
+        }
+
+        function updateGrid() { //perform one iteration of grid update
+            generations++;
+            for (var j = 0; j < gridHeight; j++) { //iterate through rows
+                for (var k = 0; k < gridWidth; k++) { //iterate through columns
+                    var totalCells = 0;
+                    if (j !== 0)
+                        if (k !== 0) totalCells += theGrid[j - 1][k - 1]; //top left
+                    if (j !== 0) totalCells += theGrid[j - 1][k]; //top center
+                    if (j !== 0)
+                        if (k !== gridWidth - 1) totalCells += theGrid[j - 1][k + 1]; //top right
+                    if (k !== 0) totalCells += theGrid[j][k - 1]; //middle left
+                    if (k !== gridWidth - 1) totalCells += theGrid[j][k + 1]; //middle right
+                    if (j !== gridHeight - 1)
+                        if (k !== 0) totalCells += theGrid[j + 1][k - 1]; //bottom left
+                    if (j !== gridHeight - 1) totalCells += theGrid[j + 1][k]; //bottom center
+                    if (j !== gridHeight - 1)
+                        if (k !== gridWidth - 1) totalCells += theGrid[j + 1][k + 1]; //bottom right
+
+                        /*
+                        if (j !== 0) if (k !== 0) totalCells += theGrid[j - 1][k - 1]; else totalCells += theGrid[gridHeight - 1][gridWidth - 1]; //top left
+                        if (j !== 0) totalCells += theGrid[j - 1][k]; else totalCells += theGrid[gridHeight - 1][k]; //top center
+                        if (j !== 0) if (k !== gridWidth - 1) totalCells += theGrid[j - 1][k + 1]; else totalCells += theGrid[gridHeight - 1][0]; //top right
+
+                        if (k !== 0) totalCells += theGrid[j][k - 1]; else totalCells += theGrid[j][gridWidth - 1]; //middle left
+                        if (k !== gridWidth - 1) totalCells += theGrid[j][k + 1]; else totalCells += theGrid[j][0]; //middle right
+
+                        if (j !== gridHeight - 1) if (k !== 0) totalCells += theGrid[j + 1][k - 1]; else totalCells += theGrid[0][gridWidth - 1]; //bottom left
+                        if (j !== gridHeight - 1) totalCells += theGrid[j + 1][k]; else totalCells += theGrid[0][k]; //bottom center
+                        if (j !== gridHeight - 1) if (k !== gridWidth - 1) totalCells += theGrid[j + 1][k + 1]; else  totalCells += theGrid[0][0]; //bottom right
+                        */
+
+                        //apply the rules to each cell
+                    if (theGrid[j][k] === 0) {
+                        switch (totalCells) {
+                            case 3:
+                                mirrorGrid[j][k] = 1; //if cell is dead and has 3 neighbours, switch it on
+                                totalLivingCells++;
+                                break;
+                            default:
+                                mirrorGrid[j][k] = 0; //otherwise leave it dead
+                                totalDyingCells++;
+                        }
+                    } else if (theGrid[j][k] === 1) { //apply rules to living cell
+                        switch (totalCells) {
+                            case 0:
+                            case 1:
+                                mirrorGrid[j][k] = 0; //die of lonelines
+                                totalDyingCells++;
+                                break;
+                            case 2:
+                            case 3:
+                                mirrorGrid[j][k] = 1; //carry on living
+                                totalLivingCells++;
+                                break;
+                            case 4:
+                            case 5:
+                            case 6:
+                            case 7:
+                            case 8:
+                                mirrorGrid[j][k] = 0; //die of overcrowding
+                                totalDyingCells++;
+                                break;
+                            default:
+                                mirrorGrid[j][k] = 0;
+                                totalDyingCells++;
+                        }
+                    }
+                }
+            }
+            for (var j = 0; j < gridHeight; j++) { //iterate through rows
+                for (var k = 0; k < gridWidth; k++) { //iterate through columns
+                    theGrid[j][k] = mirrorGrid[j][k];
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
