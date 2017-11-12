@@ -7,4 +7,5 @@
 ## Facebook, Twitter
 
 Facebook: [https://www.facebook.com/CellularAutomataBlog/](https://www.facebook.com/CellularAutomataBlog/)
+
 Twitter: ([https://twitter.com/CellAutoBlog](https://twitter.com/CellAutoBlog)
